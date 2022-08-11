@@ -11,16 +11,16 @@ const primaryDogBreedSelect = document.getElementById('primary-dog-breeds')
 const formElement = document.getElementById('form')
 const loader = document.getElementById('loader')
 
-// Startup function
-getRandomImages()
-getDogBreeds()
+let dogBreeds = null
 
 // Get random images for random dogs
 function getRandomImages(isReload = false) {
-  formElement.style.visibility = 'hidden'
+  if(!isReload) {
+    formElement.style.visibility = 'hidden'
+  }
   console.log('entrouuu')
-  
-  fetch(imgUrlEndpoint)
+  getDogBreeds().then(() => {
+    fetch(imgUrlEndpoint)
     .then((res) => res.json())
     .then((data) => configureSuggestedBreedElements(data.message, isReload))
     .then(() => {
@@ -31,12 +31,14 @@ function getRandomImages(isReload = false) {
       })
     })
     .catch((err) => console.error('AQUI ESTÁ O ERRO', err))
+  })
+ 
 }
 
 // Get random images from a specific dog breed
 function getDogBreeds() {
-  fetch(breedUrlEndpoint).then((res) => res.json())
-  .then((data) => addBreedListItems(data.message))
+  return fetch(breedUrlEndpoint).then((res) => res.json())
+  .then((data) => {dogBreeds = data})
 }
 
 // Configure elements for suggested breed section
@@ -73,6 +75,7 @@ function configureSuggestedBreedElements(imgArr, isReload) {
     informationsSuggestedBreedDivElement.appendChild(pElementDescription)
 
     suggestedBreedDivElement.appendChild(informationsSuggestedBreedDivElement)
+
   }
 
   let wrapBreedDetailsDivElement = document.createElement('div')
@@ -97,7 +100,9 @@ function configureSuggestedBreedElements(imgArr, isReload) {
     breedDetailsDivElement.classList.add('nome-da-classe-pra-ficar-lado-a-lado')
 
     wrapBreedDetailsDivElement.appendChild(breedDetailsDivElement)
+    
   })
+  
 
   if (isReload) {
     wrapBreedDetailsDivElement.style.visibility = 'visible'
@@ -119,7 +124,19 @@ function configureSuggestedBreedElements(imgArr, isReload) {
   //   sectionBreedDivElement.appendChild(primaryDogBreedSelect)
 
   //   suggestedBreedDivElement.appendChild(sectionBreedDivElement)
+  
+    const primaryDogBreedSelect = document.createElement('select')
+    primaryDogBreedSelect.id = 'primary-dog-breeds'
 
+    primaryDogBreedSelect.onchange = (e) => {
+      const selecBreed = e.target.value;
+      console.log(selecBreed)
+    } 
+
+    suggestedBreedDivElement.appendChild(primaryDogBreedSelect)
+    addBreedListItems(dogBreeds.message, primaryDogBreedSelect)
+  
+  
 }
 
 // Configure elements for dog breed select
@@ -185,23 +202,23 @@ function reloadRandomImages() {
   getRandomImages(true)
 }
 
-
-
-
-function addBreedListItems(itemObject) {
+function addBreedListItems(itemObject, container) {
   const itemKeys = Object.keys(itemObject)
   console.log('itemKeys', itemKeys)
-  itemKeys.forEach((item) => addBreedItem(item, itemObject[item]))
+  itemKeys.forEach((item) => addBreedItem(item, itemObject[item], container))
 }
 
-function addBreedItem(breed, subBreeds) {
-  addBreed(breed)
-  subBreeds.forEach((sb) => addBreed(`${breed} ${sb}`))
+function addBreedItem(breed, subBreeds, container) {
+  addBreed(breed, container)
+  subBreeds.forEach((sb) => addBreed(`${breed} ${sb}`, container ))
 }
 
-function addBreed(breed) {
+function addBreed(breed, container) {
   const breedOption = document.createElement('option')
   breedOption.text = capitalizeFirstLetter(breed)
   breedOption.value = breed
-  primaryDogBreedSelect.appendChild(breedOption)
+  container.appendChild(breedOption)
 }
+
+// Startup function
+getRandomImages()
