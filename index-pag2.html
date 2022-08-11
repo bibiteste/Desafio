@@ -32,7 +32,12 @@
     <div id="image-container" class="test-class">
     </div>
 
-    <label for="primary-dog-breeds">Selecione a raça primária</label><br>
+    <div id="wrapper-primary-dog-breeds" style="display: none;">
+      <label for="primary-dog-breeds">Selecione a raça primária</label><br>
+      <select id="primary-dog-breeds" onchange="setBreedImage(this)"></select>
+      <img id="img-dog-breeds" src="" alt="">
+    </div>
+    
     
   </body>
   <!--<script src="components-pag2/JS/swiper-bundle.min.js"></script>-->

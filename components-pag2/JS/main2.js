@@ -3,11 +3,14 @@ const DOG_API_BASE_URL = "https://dog.ceo/api"
 
 // Endpoints definitions
 const imgUrlEndpoint = `${DOG_API_BASE_URL}/breeds/image/random/3`
+
 const breedUrlEndpoint = `${DOG_API_BASE_URL}/breeds/list/all`
 
 // Get HTML elements
 const mainDivElement = document.getElementById('image-container')
+const wrapperDogBreedSelect = document.getElementById('wrapper-primary-dog-breeds')
 const primaryDogBreedSelect = document.getElementById('primary-dog-breeds')
+const imgDogBreeds = document.getElementById('img-dog-breeds')
 const formElement = document.getElementById('form')
 const loader = document.getElementById('loader')
 
@@ -17,8 +20,10 @@ let dogBreeds = null
 function getRandomImages(isReload = false) {
   if(!isReload) {
     formElement.style.visibility = 'hidden'
+ 
   }
   console.log('entrouuu')
+
   getDogBreeds().then(() => {
     fetch(imgUrlEndpoint)
     .then((res) => res.json())
@@ -27,6 +32,7 @@ function getRandomImages(isReload = false) {
       sleep(2000).then(() => {
         loader.style.display = 'none'
         formElement.style.visibility = 'visible'
+        wrapperDogBreedSelect.style.display = 'block'
 
       })
     })
@@ -81,6 +87,8 @@ function configureSuggestedBreedElements(imgArr, isReload) {
   let wrapBreedDetailsDivElement = document.createElement('div')
   wrapBreedDetailsDivElement.id = 'wrap-breed-details'
 
+  // criar todas as imagens retornadas pela api random
+  // para cada imagens cria alguns elementos em HTML dinamicamente
   imgArr.forEach((img, i) => {
     let breedDetailsDivElement = document.createElement('div')
     breedDetailsDivElement.id = `breed-details-${i + 1}`
@@ -94,9 +102,22 @@ function configureSuggestedBreedElements(imgArr, isReload) {
     let treatedBreedName = img.split('/')[4].replace('-', ' ')
     let pTagElement = document.createElement('p')
     pTagElement.innerHTML = capitalizeFirstLetter(treatedBreedName)
-
+    
     breedDetailsDivElement.appendChild(pTagElement)
 
+    let paragrafoTagElement = document.createElement('p')
+    paragrafoTagElement.innerHTML = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam rutrum nibh ac justo pulvinar, sit amet pellentesque dui mattis. Aliquam aliquam commodo massa non feugiat. Sed ultrices urna a interdum.'
+
+    breedDetailsDivElement.appendChild(paragrafoTagElement)
+
+    let buttonTagElement = document.createElement('button')
+    buttonTagElement.innerHTML = 'Adote me!'
+    buttonTagElement.onclick = function () {
+      location.href = "http://www.yoursite.com";
+    };
+
+    breedDetailsDivElement.appendChild(buttonTagElement)
+    
     breedDetailsDivElement.classList.add('nome-da-classe-pra-ficar-lado-a-lado')
 
     wrapBreedDetailsDivElement.appendChild(breedDetailsDivElement)
@@ -114,29 +135,38 @@ function configureSuggestedBreedElements(imgArr, isReload) {
 
   suggestedBreedDivElement.appendChild(wrapBreedDetailsDivElement)
   mainDivElement.appendChild(suggestedBreedDivElement)
-
-  // let sectionBreedDivElement = document.createElement('div')
-
-  //   sectionBreedDivElement.id = 'section-breed'
-
-  //   const primaryDogBreedSelect = document.getElementById('primary-dog-breeds')
-
-  //   sectionBreedDivElement.appendChild(primaryDogBreedSelect)
-
-  //   suggestedBreedDivElement.appendChild(sectionBreedDivElement)
   
-    const primaryDogBreedSelect = document.createElement('select')
-    primaryDogBreedSelect.id = 'primary-dog-breeds'
+    // const primaryDogBreedSelect = document.createElement('select')
+    // primaryDogBreedSelect.id = 'primary-dog-breeds'
 
-    primaryDogBreedSelect.onchange = (e) => {
-      const selecBreed = e.target.value;
-      console.log(selecBreed)
-    } 
+    // primaryDogBreedSelect.onchange = (e) => {
+    //   const selecBreed = e.target.value;
+    //   console.log(selecBreed)
+    // } 
 
-    suggestedBreedDivElement.appendChild(primaryDogBreedSelect)
-    addBreedListItems(dogBreeds.message, primaryDogBreedSelect)
+    // suggestedBreedDivElement.appendChild(primaryDogBreedSelect)
+    // addBreedListItems(dogBreeds.message, primaryDogBreedSelect)
   
+
   
+}
+
+function loaderBreedsAsync () {
+  const primaryDogBreedSelect = document.getElementById('primary-dog-breeds')
+
+  fetch(breedUrlEndpoint)
+  .then((res) => {return res.json()}) // pega o json
+  .then((response) => {addBreedListItems(response.message, primaryDogBreedSelect)}) // chama a função que carrega a lista de breeds   
+}
+
+function setBreedImage (e) {
+  console.log(e.value)
+  let treatedBreedName = e.value.split(' ')[0]
+  const urlMudarIsso = `https://dog.ceo/api/breed/${treatedBreedName}/images/random`
+
+  fetch(urlMudarIsso)
+  .then((res) => {return res.json()}) // pega o json
+  .then((response) => {imgDogBreeds.src = response.message})
 }
 
 // Configure elements for dog breed select
@@ -202,23 +232,24 @@ function reloadRandomImages() {
   getRandomImages(true)
 }
 
-function addBreedListItems(itemObject, container) {
+function addBreedListItems(itemObject, selectBreed) {
   const itemKeys = Object.keys(itemObject)
-  console.log('itemKeys', itemKeys)
-  itemKeys.forEach((item) => addBreedItem(item, itemObject[item], container))
+  // console.log('itemKeys', itemKeys)
+  itemKeys.forEach((item) => addBreedItem(item, itemObject[item], selectBreed))
 }
 
-function addBreedItem(breed, subBreeds, container) {
-  addBreed(breed, container)
-  subBreeds.forEach((sb) => addBreed(`${breed} ${sb}`, container ))
+function addBreedItem(breed, subBreeds, selectBreed) {
+  addBreed(breed, selectBreed)
+  subBreeds.forEach((sb) => addBreed(`${breed} ${sb}`, selectBreed ))
 }
 
-function addBreed(breed, container) {
+function addBreed(breed, selectBreed) {
   const breedOption = document.createElement('option')
   breedOption.text = capitalizeFirstLetter(breed)
   breedOption.value = breed
-  container.appendChild(breedOption)
+  selectBreed.appendChild(breedOption)
 }
 
 // Startup function
 getRandomImages()
+loaderBreedsAsync()
